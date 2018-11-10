@@ -47,7 +47,7 @@ function getTestFiles(funcs, testFolder, funcList) {
           if (funcs[base] || funcList.length === 0) {
             resFuncs[base] = funcs[base] || { };
 
-            resFuncs[base].mochaPlugin = {
+            resFuncs[base].tddPlugin = {
               testPath: path.join(getTestsFolder(testFolder), val),
             };
           }

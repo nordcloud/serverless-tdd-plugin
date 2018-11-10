@@ -7,17 +7,18 @@
 
 const path = require('path');
 const lambdaWrapper = require('lambda-wrapper');
-const Mocha = require('mocha');
-const chai = require('chai');
 const ejs = require('ejs');
 const fse = require('fs-extra');
 const utils = require('./utils');
 const BbPromise = require('bluebird');
 const yamlEdit = require('yaml-edit');
 const execSync = require('child_process').execSync;
-
+const TestRunner = require('./mocha-runner');
+const testRunner = new TestRunner();
 const testTemplateFile = path.join('templates', 'test-template.ejs');
 const functionTemplateFile = path.join('templates', 'function-template.ejs');
+
+// TODO: base supported runtimes on available templates
 
 const validFunctionRuntimes = [
   'aws-nodejs4.3',
@@ -93,11 +94,11 @@ class mochaPlugin {
                 shortcut: 'f',
               },
               reporter: {
-                usage: 'Mocha reporter to use',
+                usage: 'Reporter to use (mocha)',
                 shortcut: 'R',
               },
               'reporter-options': {
-                usage: 'Options for mocha reporter',
+                usage: 'Options for reporter (mocha)',
                 shortcut: 'O',
               },
               grep: {
@@ -116,7 +117,7 @@ class mochaPlugin {
                 usage: 'Path for the tests for running tests in other than default "test" folder',
               },
               compilers: {
-                usage: 'Compiler to use on Mocha',
+                usage: 'Compiler to use (mocha)',
               },
               exit: {
                 usage: 'force shutdown of the event loop after test run',
@@ -166,9 +167,6 @@ class mochaPlugin {
     const funcOption = this.options.f || this.options.function || [];
     const testsPath = this.options.p || this.options.path || utils.getTestsFolder();
     const testFileMap = {};
-    const mocha = new Mocha({
-      timeout: 6000,
-    });
 
     const stage = this.options.stage;
     const region = this.options.region;
@@ -184,7 +182,7 @@ class mochaPlugin {
       region,
     })
       .then((inited) => {
-        myModule.config = (inited.custom || {})['serverless-mocha-plugin'] || {};
+        myModule.config = (inited.custom || {})['serverless-tdd-plugin'] || {};
         // Verify that the service runtime matches with the current runtime
         let nodeVersion;
         if (typeof process.versions === 'object') {
@@ -215,7 +213,7 @@ class mochaPlugin {
             }
 
             funcNames.forEach((func) => {
-              if (funcs[func].mochaPlugin) {
+              if (funcs[func].tddPlugin) {
                 if (funcs[func].handler) {
                     // Map only functions
                   testFileMap[func] = funcs[func];
@@ -224,10 +222,10 @@ class mochaPlugin {
                   utils.setEnv(this.serverless);
                 }
 
-                const testPath = funcs[func].mochaPlugin.testPath;
+                const testPath = funcs[func].tddPlugin.testPath;
 
                 if (fse.existsSync(testPath)) {
-                  mocha.addFile(testPath);
+                  testRunner.addFile(testPath);
                 }
               }
             });
@@ -248,11 +246,11 @@ class mochaPlugin {
                   }
                 });
               }
-              mocha.reporter(reporter, reporterOptions);
+              testRunner.reporter(reporter, reporterOptions);
             }
 
             if (myModule.options.grep) {
-              mocha.grep(myModule.options.grep);
+              testRunner.grep(myModule.options.grep);
             }
 
             // set the SERVERLESS_TEST_ROOT variable to define root for tests
@@ -273,10 +271,10 @@ class mochaPlugin {
             process.env['SERVERLESS_TEST_ROOT'] = rootFolder;
 
             if (myModule.options.live) {
-              process.env['SERVERLESS_MOCHA_PLUGIN_LIVE'] = true;
-              process.env['SERVERLESS_MOCHA_PLUGIN_REGION'] = region || inited.provider.region;
-              process.env['SERVERLESS_MOCHA_PLUGIN_SERVICE'] = inited.service;
-              process.env['SERVERLESS_MOCHA_PLUGIN_STAGE'] = stage || inited.provider.stage;
+              process.env['SERVERLESS_TDD_PLUGIN_LIVE'] = true;
+              process.env['SERVERLESS_TDD_PLUGIN_REGION'] = region || inited.provider.region;
+              process.env['SERVERLESS_TDD_PLUGIN_SERVICE'] = inited.service;
+              process.env['SERVERLESS_TDD_PLUGIN_STAGE'] = stage || inited.provider.stage;
             }
             /* eslint-enable dot-notation */
 
@@ -296,25 +294,7 @@ class mochaPlugin {
               });
             }
 
-            const mochaRunner = mocha.run((failures) => {
-              process.on('exit', () => {
-                myModule.runScripts('postTestCommands')
-                // exit with non-zero status if there were failures
-                  .then(() => process.exit(failures));
-              });
-            }).on('test', (suite) => {
-              const testFuncName = utils.funcNameFromPath(suite.file);
-                // set env only for functions
-              if (testFileMap[testFuncName]) {
-                utils.setEnv(myModule.serverless, testFuncName);
-              } else {
-                utils.setEnv(myModule.serverless);
-              }
-            });
-
-            if (myModule.options.exit) {
-              mochaRunner.on('end', process.exit);
-            }
+            testRunner.run(myModule, myModule.options, testFileMap);
 
             return null;
           }, error => myModule.serverless.cli.log(error));
@@ -498,9 +478,7 @@ class mochaPlugin {
         }
 
         fse.writeFileSync(serverlessYmlFilePath, ymlEditor.dump());
-        if (runtime === 'aws-nodejs4.3' ||
-            runtime === 'aws-nodejs6.10' ||
-            runtime === 'aws-nodejs8.10') {
+        if (runtime === 'aws-nodejs8.10') {
           return this.createAWSNodeJSFuncFile(handler);
         }
 
@@ -513,7 +491,8 @@ class mochaPlugin {
 
 module.exports = mochaPlugin;
 module.exports.lambdaWrapper = lambdaWrapper;
-module.exports.chai = chai;
+module.exports.runner = testRunner;
+
 const initLiveModule = module.exports.initLiveModule = (modName) => {
   const functionName = [
     process.env.SERVERLESS_MOCHA_PLUGIN_SERVICE,
@@ -527,6 +506,7 @@ const initLiveModule = module.exports.initLiveModule = (modName) => {
   };
 };
 
+module.exports.runner = testRunner;
 module.exports.getWrapper = (modName, modPath, handler) => {
   let wrapped;
   // TODO: make this fetch the data from serverless.yml
