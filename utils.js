@@ -78,6 +78,17 @@ function createTestFolder(testsRootFolder) {
   });
 }
 
+function getProvider(config) {
+  return [config.provider.name, config.provider.runtime].join('.');
+}
+
+function getDefaultFunctionTemplate(provider) {
+  const fileName = [ 'function', provider, 'ejs'].join('.');
+  const templatePath = path.join(__dirname, 'templates', fileName);
+
+  return templatePath;
+}
+
 function getTemplateFromFile(templateFilenamePath) {
   return fs.readFileSync(templateFilenamePath, 'utf-8');
 }
@@ -109,4 +120,6 @@ module.exports = {
   getTemplateFromFile,
   funcNameFromPath,
   setEnv,
+  getProvider,
+  getDefaultFunctionTemplate,
 };

@@ -33,7 +33,7 @@ class mochaPlugin {
   constructor(serverless, options) {
     this.serverless = serverless;
     this.options = options;
-
+    
     this.commands = {
       create: {
         commands: {
@@ -381,12 +381,13 @@ class mochaPlugin {
     });
   }
 
-  createAWSNodeJSFuncFile(handlerPath) {
+  createAWSNodeJSFuncFile(handlerPath, runtime) {
     const handlerInfo = path.parse(handlerPath);
     const handlerDir = path.join(this.serverless.config.servicePath, handlerInfo.dir);
     const handlerFile = `${handlerInfo.name}.js`;
     const handlerFunction = handlerInfo.ext.replace(/^\./, '');
-    let templateFile = path.join(__dirname, functionTemplateFile);
+
+    let templateFile = utils.getDefaultFunctionTemplate(runtime);;
 
     if (this.serverless.service.custom &&
       this.serverless.service.custom['serverless-mocha-plugin'] &&
@@ -428,9 +429,10 @@ class mochaPlugin {
 
     return this.serverless.yamlParser.parse(serverlessYmlFilePath)
       .then((config) => {
-        const runtime = [config.provider.name, config.provider.runtime].join('-');
-
-        if (validFunctionRuntimes.indexOf(runtime) < 0) {
+        const runtime = utils.getProvider(config);
+        const functionTemplate = utils.getDefaultFunctionTemplate(runtime);
+        
+        if (! fse.existsSync(functionTemplate)) {
           const errorMessage = [
             `Provider / Runtime "${runtime}" is not supported.`,
             ` Supported runtimes are: ${humanReadableFunctionRuntimes}.`,
@@ -478,9 +480,7 @@ class mochaPlugin {
         }
 
         fse.writeFileSync(serverlessYmlFilePath, ymlEditor.dump());
-        if (runtime === 'aws-nodejs8.10') {
-          return this.createAWSNodeJSFuncFile(handler);
-        }
+        return this.createAWSNodeJSFuncFile(handler, runtime);
 
         throw new this.serverless.classes.Error(`Unknown runtime ${runtime}`);
 
