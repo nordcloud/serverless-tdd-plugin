@@ -382,27 +382,28 @@ class mochaPlugin {
   }
 
   createAWSNodeJSFuncFile(handlerPath, runtime) {
-    const handlerInfo = path.parse(handlerPath);
-    const handlerDir = path.join(this.serverless.config.servicePath, handlerInfo.dir);
-    const handlerFile = `${handlerInfo.name}.js`;
-    const handlerFunction = handlerInfo.ext.replace(/^\./, '');
-
-    let templateFile = utils.getDefaultFunctionTemplate(runtime);;
-
+    // read template and render
+    let templateFile = utils.getDefaultFunctionTemplate(runtime);
+    
     if (this.serverless.service.custom &&
       this.serverless.service.custom['serverless-mocha-plugin'] &&
       this.serverless.service.custom['serverless-mocha-plugin'].functionTemplate) {
       templateFile = path.join(this.serverless.config.servicePath,
         this.serverless.service.custom['serverless-mocha-plugin'].functionTemplate);
     }
-
+    const suffix = path.extname(templateFile);
     const templateText = fse.readFileSync(templateFile).toString();
-    const jsFile = ejs.render(templateText, {
-      handlerFunction,
-    });
 
+    // Define output file
+    const handlerInfo = path.parse(handlerPath);
+    const handlerDir = path.join(this.serverless.config.servicePath, handlerInfo.dir);
+    const handlerFile = `${handlerInfo.name}.${suffix}`;
+    const handlerFunction = handlerInfo.ext.replace(/^\./, '');
     const filePath = path.join(handlerDir, handlerFile);
 
+    const outFile = ejs.render(templateText, {
+      handlerFunction,
+    });
     this.serverless.utils.writeFileDir(filePath);
     if (this.serverless.utils.fileExistsSync(filePath)) {
       const errorMessage = [
@@ -410,7 +411,7 @@ class mochaPlugin {
       ].join('');
       throw new this.serverless.classes.Error(errorMessage);
     }
-    fse.writeFileSync(path.join(handlerDir, handlerFile), jsFile);
+    fse.writeFileSync(path.join(handlerDir, handlerFile), outFile);
 
     this.serverless.cli.log(`Created function file "${path.join(handlerDir, handlerFile)}"`);
     return BbPromise.resolve();
@@ -431,7 +432,7 @@ class mochaPlugin {
       .then((config) => {
         const runtime = utils.getProvider(config);
         const functionTemplate = utils.getDefaultFunctionTemplate(runtime);
-        
+
         if (! fse.existsSync(functionTemplate)) {
           const errorMessage = [
             `Provider / Runtime "${runtime}" is not supported.`,

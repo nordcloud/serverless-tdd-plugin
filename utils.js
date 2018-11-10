@@ -83,7 +83,7 @@ function getProvider(config) {
 }
 
 function getDefaultFunctionTemplate(provider) {
-  const fileName = [ 'function', provider, 'ejs'].join('.');
+  const fileName = [ 'function', provider, 'js'].join('.');
   const templatePath = path.join(__dirname, 'templates', fileName);
 
   return templatePath;
