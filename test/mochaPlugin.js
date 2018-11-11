@@ -27,4 +27,10 @@ describe('mochaPlugin', () => {
       'create:function:create',
     ]);
   });
+
+  it('initRunner returns the test framework runner', () => {
+    const mochaPlugin = new MochaPlugin({}, {});
+    const testRunner = mochaPlugin.initRunner({testFramework: 'mocha'});
+    expect(typeof(testRunner)).to.eql('object');
+  });
 });

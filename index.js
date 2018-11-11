@@ -13,8 +13,6 @@ const utils = require('./utils');
 const BbPromise = require('bluebird');
 const yamlEdit = require('yaml-edit');
 const execSync = require('child_process').execSync;
-const TestRunner = require('./mocha-runner');
-const testRunner = new TestRunner();
 const testTemplateFile = path.join('templates', 'test-template.ejs');
 const functionTemplateFile = path.join('templates', 'function-template.ejs');
 
@@ -33,7 +31,8 @@ class mochaPlugin {
   constructor(serverless, options) {
     this.serverless = serverless;
     this.options = options;
-    
+    this.testRunner = null;
+
     this.commands = {
       create: {
         commands: {
@@ -190,6 +189,8 @@ class mochaPlugin {
         } else {
           nodeVersion = process.versions;
         }
+        this.initRunner(myModule.config);
+
         nodeVersion = nodeVersion.replace(/\.[^.]*$/, '');
         if (`nodejs${nodeVersion}` !== inited.provider.runtime) {
           let errorMsg = `Tests being run with nodejs${nodeVersion}, `;
@@ -225,7 +226,7 @@ class mochaPlugin {
                 const testPath = funcs[func].tddPlugin.testPath;
 
                 if (fse.existsSync(testPath)) {
-                  testRunner.addFile(testPath);
+                  this.testRunner.addFile(testPath);
                 }
               }
             });
@@ -246,11 +247,11 @@ class mochaPlugin {
                   }
                 });
               }
-              testRunner.reporter(reporter, reporterOptions);
+              this.testRunner.reporter(reporter, reporterOptions);
             }
 
             if (myModule.options.grep) {
-              testRunner.grep(myModule.options.grep);
+              this.testRunner.grep(myModule.options.grep);
             }
 
             // set the SERVERLESS_TEST_ROOT variable to define root for tests
@@ -294,7 +295,7 @@ class mochaPlugin {
               });
             }
 
-            testRunner.run(myModule, myModule.options, testFileMap);
+            this.testRunner.run(myModule, myModule.options, testFileMap);
 
             return null;
           }, error => myModule.serverless.cli.log(error));
@@ -416,6 +417,33 @@ class mochaPlugin {
     this.serverless.cli.log(`Created function file "${path.join(handlerDir, handlerFile)}"`);
     return BbPromise.resolve();
   }
+  
+  initRunner(config) {
+    if (! config.testFramework ) {
+       throw(new Error(`Parameter testFramework not set`)); 
+    }
+    const TestRunner = require(`./${config.testFramework}-runner`);  
+    this.testRunner = new TestRunner();
+    return this.testRunner;
+  }
+
+  getWrapper(modName, modPath, handler) {
+    let wrapped;
+    // TODO: make this fetch the data from serverless.yml
+  
+    if (process.env.SERVERLESS_MOCHA_PLUGIN_LIVE) {
+      const mod = initLiveModule(modName);
+      wrapped = lambdaWrapper.wrap(mod);
+    } else {
+      /* eslint-disable global-require */
+      const mod = require(process.env.SERVERLESS_TEST_ROOT + modPath);
+      /* eslint-enable global-require */
+      wrapped = lambdaWrapper.wrap(mod, {
+        handler,
+      });
+    }
+    return wrapped;
+  };
 
   createFunction() {
     this.serverless.cli.log('Generating function...');
@@ -492,7 +520,6 @@ class mochaPlugin {
 
 module.exports = mochaPlugin;
 module.exports.lambdaWrapper = lambdaWrapper;
-module.exports.runner = testRunner;
 
 const initLiveModule = module.exports.initLiveModule = (modName) => {
   const functionName = [
@@ -507,21 +534,3 @@ const initLiveModule = module.exports.initLiveModule = (modName) => {
   };
 };
 
-module.exports.runner = testRunner;
-module.exports.getWrapper = (modName, modPath, handler) => {
-  let wrapped;
-  // TODO: make this fetch the data from serverless.yml
-
-  if (process.env.SERVERLESS_MOCHA_PLUGIN_LIVE) {
-    const mod = initLiveModule(modName);
-    wrapped = lambdaWrapper.wrap(mod);
-  } else {
-    /* eslint-disable global-require */
-    const mod = require(process.env.SERVERLESS_TEST_ROOT + modPath);
-    /* eslint-enable global-require */
-    wrapped = lambdaWrapper.wrap(mod, {
-      handler,
-    });
-  }
-  return wrapped;
-};

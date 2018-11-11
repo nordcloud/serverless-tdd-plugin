@@ -90,3 +90,7 @@ functions:
 plugins:
   - serverless-tdd-plugin
   - serverless-webpack
+
+custom:
+  serverless-tdd-plugin:
+    testFramework: mocha

@@ -87,3 +87,7 @@ functions:
 
 plugins:
   - serverless-tdd-plugin
+
+custom:
+  serverless-tdd-plugin:
+    testFramework: mocha
