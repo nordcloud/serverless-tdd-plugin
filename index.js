@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * serverless-mocha-plugin
+ * serverless-tdd-plugin
  * - a plugin for TDD with Serverless Framework
  */
 
@@ -322,10 +322,10 @@ class mochaPlugin {
         let templateFilenamePath = '';
 
         if (this.serverless.service.custom &&
-          this.serverless.service.custom['serverless-mocha-plugin'] &&
-          this.serverless.service.custom['serverless-mocha-plugin'].testTemplate) {
+          this.serverless.service.custom['serverless-tdd-plugin'] &&
+          this.serverless.service.custom['serverless-tdd-plugin'].testTemplate) {
           templateFilenamePath = path.join(this.serverless.config.servicePath,
-            this.serverless.service.custom['serverless-mocha-plugin'].testTemplate);
+            this.serverless.service.custom['serverless-tdd-plugin'].testTemplate);
         }
 
         fse.exists(templateFilenamePath, (exists2) => {
@@ -345,7 +345,7 @@ class mochaPlugin {
               myModule.serverless.cli.log(`Creating file ${testFilePath} failed: ${err}`);
               return new Error(`Creating file ${testFilePath} failed: ${err}`);
             }
-            return myModule.serverless.cli.log(`serverless-mocha-plugin: created ${testFilePath}`);
+            return myModule.serverless.cli.log(`serverless-tdd-plugin: created ${testFilePath}`);
           });
         });
         return null;
@@ -386,12 +386,12 @@ class mochaPlugin {
     let templateFile = utils.getDefaultFunctionTemplate(runtime);
     
     if (this.serverless.service.custom &&
-      this.serverless.service.custom['serverless-mocha-plugin'] &&
-      this.serverless.service.custom['serverless-mocha-plugin'].functionTemplate) {
+      this.serverless.service.custom['serverless-tdd-plugin'] &&
+      this.serverless.service.custom['serverless-tdd-plugin'].functionTemplate) {
       templateFile = path.join(this.serverless.config.servicePath,
-        this.serverless.service.custom['serverless-mocha-plugin'].functionTemplate);
+        this.serverless.service.custom['serverless-tdd-plugin'].functionTemplate);
     }
-    const suffix = path.extname(templateFile);
+    const suffix = path.extname(templateFile).replace('ejs', 'js').replace('.', '');
     const templateText = fse.readFileSync(templateFile).toString();
 
     // Define output file

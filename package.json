@@ -1,5 +1,5 @@
 {
-  "name": "serverless-mocha-plugin",
+  "name": "serverless-tdd-plugin",
   "version": "1.9.0",
   "engines": {
     "node": ">=4.0"

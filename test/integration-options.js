@@ -14,12 +14,12 @@ const serverlessExec = path.join(serverless.config.serverlessPath, '..', 'bin', 
 describe('integration with options in stage prod', () => {
   before(() => {
     // create temporary directory and copy test service there
-    process.env.MOCHA_PLUGIN_TEST_DIR = path.join(__dirname);
+    process.env.SLS_TDD_PLUGIN_TEST_DIR = path.join(__dirname);
     const tmpDir = testUtils.getTmpDirPath();
     fse.mkdirsSync(tmpDir);
-    fse.copySync(path.join(process.env.MOCHA_PLUGIN_TEST_DIR, 'test-service-options'), tmpDir);
+    fse.copySync(path.join(process.env.SLS_TDD_PLUGIN_TEST_DIR, 'test-service-options'), tmpDir);
     process.chdir(tmpDir);
-    execSync(`ln -s ${process.env.MOCHA_PLUGIN_TEST_DIR}/../node_modules ${tmpDir}/`);
+    execSync(`ln -s ${process.env.SLS_TDD_PLUGIN_TEST_DIR}/../node_modules ${tmpDir}/`);
   });
 
   it('should contain test params in cli info', () => {
@@ -40,7 +40,7 @@ describe('integration with options in stage prod', () => {
     const test = execSync(`${serverlessExec} create test --function hello --stage prod`);
     const result = new Buffer(test, 'base64').toString();
     expect(result).to.have.string(
-      'serverless-mocha-plugin: created test/hello.js'
+      'serverless-tdd-plugin: created test/hello.js'
     );
   });
 
@@ -58,7 +58,7 @@ describe('integration with options in stage prod', () => {
       'Add http event \'get event\''
     );
     expect(result).to.have.string(
-      'serverless-mocha-plugin: created test/goodbye.js'
+      'serverless-tdd-plugin: created test/goodbye.js'
     );
   });
 
@@ -66,13 +66,13 @@ describe('integration with options in stage prod', () => {
     // change test files to use local proxy version of mocha plugin
     testUtils.replaceTextInFile(
       path.join('test', 'hello.js'),
-      'require(\'serverless-mocha-plugin\')',
-      'require(\'../.serverless_plugins/serverless-mocha-plugin/index.js\')'
+      'require(\'serverless-tdd-plugin\')',
+      'require(\'../.serverless_plugins/serverless-tdd-plugin/index.js\')'
     );
     testUtils.replaceTextInFile(
       path.join('test', 'goodbye.js'),
-      'require(\'serverless-mocha-plugin\')',
-      'require(\'../.serverless_plugins/serverless-mocha-plugin/index.js\')'
+      'require(\'serverless-tdd-plugin\')',
+      'require(\'../.serverless_plugins/serverless-tdd-plugin/index.js\')'
     );
     const test = execSync(`${serverlessExec} invoke test --stage prod`);
     const result = new Buffer(test, 'base64').toString();
