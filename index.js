@@ -13,8 +13,7 @@ const utils = require('./utils');
 const BbPromise = require('bluebird');
 const yamlEdit = require('yaml-edit');
 const execSync = require('child_process').execSync;
-const testTemplateFile = path.join('templates', 'test-template.ejs');
-const functionTemplateFile = path.join('templates', 'function-template.ejs');
+//const testTemplateFile = path.join('templates', 'test-template.ejs');
 
 // TODO: base supported runtimes on available templates
 
@@ -306,7 +305,7 @@ class mochaPlugin {
     const funcName = this.options.f || this.options.function;
     const testsRootFolder = this.options.p || this.options.path;
     const myModule = this;
-
+    
     utils.createTestFolder(testsRootFolder).then(() => {
       const testFilePath = utils.getTestFilePath(funcName, testsRootFolder);
       const func = myModule.serverless.service.functions[funcName];
@@ -328,10 +327,19 @@ class mochaPlugin {
           templateFilenamePath = path.join(this.serverless.config.servicePath,
             this.serverless.service.custom['serverless-tdd-plugin'].testTemplate);
         }
-
         fse.exists(templateFilenamePath, (exists2) => {
           if (!exists2) {
-            templateFilenamePath = path.join(__dirname, testTemplateFile);
+            const runtime = [
+              this.serverless.service.provider.name,
+              this.serverless.service.provider.runtime,
+            ].join('.');
+            const testTemplateFile = [
+              'test',
+              runtime,
+              this.serverless.service.custom['serverless-tdd-plugin'].testFramework
+            ].join('-') + '.js';
+
+            templateFilenamePath = path.join(__dirname, 'templates', testTemplateFile);
           }
           const templateString = utils.getTemplateFromFile(templateFilenamePath);
 

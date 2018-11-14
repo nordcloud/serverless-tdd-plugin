@@ -36,7 +36,7 @@ describe('utils', () => {
 
   it('gets template from a file', () => {
     const templatePath =
-      path.join(process.env.SLS_TDD_PLUGIN_TEST_DIR, '../', 'templates/test-template.ejs');
+      path.join(process.env.SLS_TDD_PLUGIN_TEST_DIR, '../', 'templates/test-aws.nodejs8.10-mocha.js');
     const expectedTemplate = fse.readFileSync(templatePath, 'utf-8');
     const template = utils.getTemplateFromFile(templatePath);
     expect(template).to.be.equal(expectedTemplate);

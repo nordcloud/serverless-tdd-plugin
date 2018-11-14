@@ -19,8 +19,6 @@ describe('integration (aws.nodejs8.10-mocha template)', () => {
     fse.mkdirsSync(tmpDir);
     fse.copySync(path.join(process.env.SLS_TDD_PLUGIN_TEST_DIR, 'test-aws.nodejs8.10-mocha'), tmpDir);
     process.chdir(tmpDir);
-    console.log(`SLS_TDD_PLUGIN_TEST_DIR=${path.join(__dirname)}`);
-    console.log(tmpDir);
   });
 
   it('should contain test params in cli info', () => {
