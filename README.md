@@ -1,13 +1,9 @@
-# Serverless Mocha Plugin
+# Serverless TDD Plugin
 
-[![Build Status](https://travis-ci.org/nordcloud/serverless-mocha-plugin.svg?branch=master)](https://travis-ci.org/nordcloud/serverless-mocha-plugin)
+[![Build Status](https://travis-ci.org/nordcloud/serverless-tdd-plugin.svg?branch=master)](https://travis-ci.org/nordcloud/serverless-tdd-plugin)
 
 A Serverless Plugin for the [Serverless Framework](http://www.serverless.com) which
-adds support for test driven development using [mocha](https://mochajs.org/)
-
-**THIS PLUGIN REQUIRES SERVERLESS V1!**
-
-More familiar with Jest? Use [serverless-jest-plugin](https://github.com/sc5/serverless-jest-plugin).
+adds support for test driven development using [mocha](https://mochajs.org/) or [jest](https://jest.org)
 
 ## Introduction
 
@@ -21,14 +17,18 @@ This plugins does the following:
 In your service root, run:
 
 ```bash
-npm install --save-dev serverless-mocha-plugin
+npm install --save-dev serverless-tdd-plugin
 ```
 
-Add the plugin to `serverless.yml`:
+Add the plugin to `serverless.yml`and configure the test framework to use:
 
 ```yml
 plugins:
-  - serverless-mocha-plugin
+  - serverless-tdd-plugin
+
+custom:
+  serverless-tdd-plugin:
+    testFramework: mocha
 ```
 
 ## Usage
@@ -120,7 +120,7 @@ The templates to use for new function Files can be determined with the custom `t
 
 ```yaml
 custom:
-  serverless-mocha-plugin:
+  serverless-tdd-plugin:
     testTemplate: templates/myTest.js
 ```
 
@@ -138,7 +138,7 @@ The templates to use for new function Files can be determined with the custom `f
 
 ```yaml
 custom:
-  serverless-mocha-plugin:
+  serverless-tdd-plugin:
     functionTemplate: templates/myFunction.js
 ```
 
@@ -182,24 +182,9 @@ rm .offline.pid
 ```
 ## Release History (1.x)
 
-* 2018/09/16 - v1.9.0 - add support for --exit option
-* 2018/04/03 - v1.8.0 - add support for Node 8
-* 2017/09/10 - v1.7.0 - ability to run scripts before / after tests
-* 2017/09/09 - v1.6.0 - also run tests from subfolders of test
-* 2017/07/11 - v1.4.1 - Add option --root for running tests on e.g. webpack build results residing in other directories,
-                        add option --httpEvent to create http events when creating functions
-* 2017/07/09 - v1.4.0 - Add --live switch, 
-                        add --grep switch, 
-                        verify that the test runtime matches the service runtime,
-                        upgrade lambda-wrapper (returns exceptions as errors)
-* 2016/12/21 - v1.3.2 - Fix population of environment variables
-* 2016/11/28 - v1.3.1 - Added support for environment variables in Serverless 1.2
-* 2016/11/09 - v1.2.0 - Added ability to add function / test templates
-* 2016/11/09 - v1.1.0 - Added function create command.
-* 2016/09/23 - v1.0.2 - Bugfixes, configurable test timeouts
-* 2016/08/15 - v1.0.0 - Preliminary version for Serverless 1.0
+* 2018/11/14 - v0.1.0 - Preliminary version
 
 ## License
 
-Copyright (c) 2017 [Nordcloud](https://nordcloud.com/), licensed for users and contributors under MIT license.
+Copyright (c) 2018 [Nordcloud](https://nordcloud.com/), licensed for users and contributors under MIT license.
 https://github.com/nordcloud/serverless-mocha-plugin/blob/master/LICENSE
