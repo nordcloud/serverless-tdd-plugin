@@ -39,7 +39,7 @@ describe('integration (aws.nodejs8.10-mocha template)', () => {
     const test = execSync(`${serverlessExec} create test --function hello`);
     const result = new Buffer(test, 'base64').toString();
     expect(result).to.have.string(
-      'serverless-tdd-plugin: created test/hello.js'
+      'serverless-tdd-plugin: created test/hello.test.js'
     );
   });
 
@@ -50,7 +50,7 @@ describe('integration (aws.nodejs8.10-mocha template)', () => {
     );
     const result = new Buffer(test, 'base64').toString();
     expect(result).to.have.string(
-      'serverless-tdd-plugin: created test/goodbye.js'
+      'serverless-tdd-plugin: created test/goodbye.test.js'
     );
   });
 

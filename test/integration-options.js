@@ -16,6 +16,7 @@ describe('integration with options in stage prod', () => {
     // create temporary directory and copy test service there
     process.env.SLS_TDD_PLUGIN_TEST_DIR = path.join(__dirname);
     const tmpDir = testUtils.getTmpDirPath();
+    console.log(tmpDir);
     fse.mkdirsSync(tmpDir);
     fse.copySync(path.join(process.env.SLS_TDD_PLUGIN_TEST_DIR, 'test-service-options'), tmpDir);
     process.chdir(tmpDir);
@@ -40,7 +41,7 @@ describe('integration with options in stage prod', () => {
     const test = execSync(`${serverlessExec} create test --function hello --stage prod`);
     const result = new Buffer(test, 'base64').toString();
     expect(result).to.have.string(
-      'serverless-tdd-plugin: created test/hello.js'
+      'serverless-tdd-plugin: created test/hello.test.js'
     );
   });
 
@@ -58,7 +59,7 @@ describe('integration with options in stage prod', () => {
       'Add http event \'get event\''
     );
     expect(result).to.have.string(
-      'serverless-tdd-plugin: created test/goodbye.js'
+      'serverless-tdd-plugin: created test/goodbye.test.js'
     );
   });
 

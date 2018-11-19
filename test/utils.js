@@ -16,22 +16,22 @@ describe('utils', () => {
 
   it('tests getTestFilePath for handler', () => {
     const testFilePath = utils.getTestFilePath('handler');
-    expect(testFilePath).to.be.equal('test/handler.js');
+    expect(testFilePath).to.be.equal('test/handler.test.js');
   });
 
   it('tests getTestFilePath for folder/handler', () => {
     const testFilePath = utils.getTestFilePath('folder/handler');
-    expect(testFilePath).to.be.equal('test/handler.js');
+    expect(testFilePath).to.be.equal('test/handler.test.js');
   });
 
   it('tests getTestFilePath for handler in custom folder', () => {
     const testFilePath = utils.getTestFilePath('handler', 'custom');
-    expect(testFilePath).to.be.equal('custom/handler.js');
+    expect(testFilePath).to.be.equal('custom/handler.test.js');
   });
 
   it('tests getTestFilePath for folder/handler in custom folder', () => {
     const testFilePath = utils.getTestFilePath('folder/handler', 'custom');
-    expect(testFilePath).to.be.equal('custom/handler.js');
+    expect(testFilePath).to.be.equal('custom/handler.test.js');
   });
 
   it('gets template from a file', () => {

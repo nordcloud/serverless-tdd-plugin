@@ -11,7 +11,7 @@ function getTestsFolder(testsRootFolder) {
 }
 
 function getTestFilePath(funcName, testsRootFolder) {
-  return path.join(getTestsFolder(testsRootFolder), `${funcName.replace(/.*\//g, '')}.js`);
+  return path.join(getTestsFolder(testsRootFolder), `${funcName.replace(/.*\//g, '')}.test.js`);
 }
 
 function traverseTestFolder(testFolder, prefix) {
@@ -42,7 +42,7 @@ function getTestFiles(funcs, testFolder, funcList) {
       const resFuncs = {};
       funcFiles.forEach((val) => {
         if (path.extname(val) === '.js') {
-          const base = path.basename(val).replace(/.js$/, '');
+          const base = path.basename(val).replace(/.test.js$/, '');
           // Create test for non-functions only if no funcList
           if (funcs[base] || funcList.length === 0) {
             resFuncs[base] = funcs[base] || { };

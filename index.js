@@ -225,6 +225,7 @@ class mochaPlugin {
                 const testPath = funcs[func].tddPlugin.testPath;
 
                 if (fse.existsSync(testPath)) {
+                  console.log('ADD ' + testPath);
                   this.testRunner.addFile(testPath);
                 }
               }
