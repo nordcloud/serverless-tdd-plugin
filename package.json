@@ -51,7 +51,7 @@
     "webpack-node-externals": "^1.5.4"
   },
   "dependencies": {
-    "aws-sdk": "^2.6.3",
+    "aws-sdk": "^2.814.0",
     "bluebird": "3.4.6",
     "chai": "^3.5.0",
     "delayed-stream": "^1.0.0",
