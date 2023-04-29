@@ -55,7 +55,7 @@
     "bluebird": "3.4.6",
     "chai": "^3.5.0",
     "delayed-stream": "^1.0.0",
-    "ejs": "^2.5.2",
+    "ejs": "^3.1.7",
     "fs-extra": "^1.0.0",
     "lambda-wrapper": "^0.3.0",
     "mocha": "^4.0.0",
